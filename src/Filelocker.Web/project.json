@@ -36,7 +36,12 @@
       "System.GC.Server": true
     }
   },
-
+  "runtimes": {
+    "win10-x64": {},
+    "osx.10.11-x64": {
+      "#import": [ "osx.10.11", "osx.10.10-x64" ]
+    }
+  },
   "publishOptions": {
     "include": [
       "wwwroot",
