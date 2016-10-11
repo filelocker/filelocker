@@ -47,7 +47,7 @@ namespace Filelocker
                 }
             });
 
-            string libPath = Path.GetFullPath(Path.Combine(env.WebRootPath, @"..\node_modules\"));
+            string libPath = Path.GetFullPath(Path.Combine(env.ContentRootPath, @"node_modules"));
             app.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = new PhysicalFileProvider(libPath),
