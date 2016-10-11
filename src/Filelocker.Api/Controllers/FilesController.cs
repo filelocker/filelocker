@@ -30,21 +30,22 @@ namespace Filelocker.Api.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostAsync(ICollection<IFormFile> files)
+        public async Task<IActionResult> PostAsync([FromBody]string test)
         {
-            var fileId = 0;
-            var uploads = Path.Combine(_environment.WebRootPath, "uploads");
-            foreach (var file in files)
-            {
-                if (file.Length > 0)
-                {
-                    using (var fileStream = new FileStream(Path.Combine(uploads, file.FileName), FileMode.Create))
-                    {
-                        await file.CopyToAsync(fileStream);
-                    }
-                }
-            }
-            return new CreatedAtRouteResult("GetAsync", new {id = fileId});
+
+            //var fileId = 0;
+            //var uploads = Path.Combine(_environment.WebRootPath, "uploads");
+            //foreach (var file in files)
+            //{
+            //    if (file.Length > 0)
+            //    {
+            //        using (var fileStream = new FileStream(Path.Combine(uploads, file.FileName), FileMode.Create))
+            //        {
+            //            await file.CopyToAsync(fileStream);
+            //        }
+            //    }
+            //}
+            return new CreatedAtRouteResult("GetAsync", new {id = 0});
 
             //    return CreatedAtRoute(
             //routeName: "SubscriberLink",

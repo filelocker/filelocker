@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using Filelocker.Domain.Interfaces;
 using Filelocker.FileSystemProviders;
@@ -49,7 +50,8 @@ namespace Filelocker.Api
                     await next();
                     return;
                 }
-
+                var bodyValues = new Dictionary<string, string>();
+                // Copy the request stream to the memory stream.
                 var boundary = GetBoundary(context.Request.ContentType);
                 var reader = new MultipartReader(boundary, context.Request.Body);
                 var section = await reader.ReadNextSectionAsync();
@@ -58,26 +60,38 @@ namespace Filelocker.Api
                 {
                     // process each image
                     const int chunkSize = 1024;
-                    var buffer = new byte[chunkSize];
-                    var fileName = GetFileName(section.ContentDisposition);
-
-                    using (var stream = fileStorageProvider.GetStream(fileName))
+                    var fileBuffer = new byte[chunkSize];
+                    if (IsFileSection(section.ContentDisposition))
                     {
-                        var bytesRead = 0;
-                        do
+                        var fileName = GetFileName(section.ContentDisposition);
+
+                        using (var stream = fileStorageProvider.GetStream(fileName))
                         {
-                            bytesRead = await section.Body.ReadAsync(buffer, 0, buffer.Length);
+                            var bytesRead = 0;
+                            do
+                            {
+                                bytesRead = await section.Body.ReadAsync(fileBuffer, 0, fileBuffer.Length);
 
-                            //TODO: Encrypt
-                            await stream.WriteAsync(buffer, 0, bytesRead);
+                                //TODO: Encrypt
+                                await stream.WriteAsync(fileBuffer, 0, bytesRead);
+                                //TODO: Update a SignalR Hub for progress tracking
 
-                        } while (bytesRead > 0);
+                            } while (bytesRead > 0);
+                        }
+                    }
+                    else // A form KVP
+                    {
+                        var kvp = await GetKeyValuePairFromFormDataAsync(section);
+                        bodyValues.Add(kvp.Key, kvp.Value);
                     }
 
                     section = await reader.ReadNextSectionAsync();
                 }
 
+
+                // Write response
                 await context.Response.WriteAsync("Done.");
+
             });
 
             app.UseMvc();
@@ -102,6 +116,29 @@ namespace Filelocker.Api
                 boundary = boundary.Substring(1, boundary.Length - 2);
             }
             return boundary;
+        }
+
+        private async Task<KeyValuePair<string, string>> GetKeyValuePairFromFormDataAsync(MultipartSection section)
+        {
+            string key = string.Empty;
+            string value = string.Empty;
+
+            var parts = section.ContentDisposition.Split(';');
+            if (parts.SingleOrDefault(part => part.Contains("name")) != null)
+            {
+                key = parts[1].Split('=')[1].Replace("\\", "").Replace("\"", "");
+                using (var streamReader = new StreamReader(section.Body))
+                {
+                    value = await streamReader.ReadToEndAsync();
+                }
+            }
+
+            return new KeyValuePair<string, string>(key, value);
+        }
+
+        private bool IsFileSection(string contentDisposition)
+        {
+            return contentDisposition.Split(';').SingleOrDefault(part => part.Contains("filename")) != null;
         }
 
         private string GetFileName(string contentDisposition)
