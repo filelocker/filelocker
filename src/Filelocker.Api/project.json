@@ -16,7 +16,9 @@
     "Microsoft.Extensions.Logging.Debug": "1.0.0",
     "Microsoft.Extensions.Options.ConfigurationExtensions": "1.0.0",
     "Filelocker.Domain": "1.0.0-*",
-    "Filelocker.FileSystemProviders": "1.0.0-*"
+    "Filelocker.FileSystemProviders": "1.0.0-*",
+    "Swashbuckle.SwaggerGen": "6.0.0-beta901",
+    "Swashbuckle.SwaggerUi": "6.0.0-beta901"
   },
 
   "tools": {
@@ -34,7 +36,8 @@
 
   "buildOptions": {
     "emitEntryPoint": true,
-    "preserveCompilationContext": true
+    "preserveCompilationContext": true,
+    "xmlDoc": false
   },
 
   "runtimeOptions": {
