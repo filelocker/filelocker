@@ -1,0 +1,5 @@
+/.vscode
+project.lock.json
+node_modules/
+bin/
+obj/
