@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using IdentityModel.Client;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +29,22 @@ namespace Filelocker.Api.Controllers
             };
 
             return await Task.FromResult(result);
+        }
+
+        [HttpGet("token")]
+        public async Task<IActionResult> GetToken()
+        {
+            // discover endpoints from metadata
+            var disco = await DiscoveryClient.GetAsync("http://localhost:5000");
+            var tokenClient = new TokenClient(disco.TokenEndpoint, "webClient", "secret");
+            var tokenResponse = await tokenClient.RequestClientCredentialsAsync("filelockerApi");
+
+            if (tokenResponse.IsError)
+            {
+                throw new Exception("Token Response Error");
+            }
+
+            return new ObjectResult(tokenResponse);
         }
 
         [HttpPost]

@@ -18,7 +18,11 @@
     "Filelocker.Domain": "1.0.0-*",
     "Filelocker.FileSystemProviders": "1.0.0-*",
     "Swashbuckle.SwaggerGen": "6.0.0-beta901",
-    "Swashbuckle.SwaggerUi": "6.0.0-beta901"
+    "Swashbuckle.SwaggerUi": "6.0.0-beta901",
+    "IdentityServer4": "1.0.0-rc2",
+    "IdentityServer4.AspNetIdentity": "1.0.0-rc2",
+    "IdentityServer4.AccessTokenValidation": "1.0.1-rc2",
+    "IdentityModel": "2.0.0"
   },
 
   "tools": {

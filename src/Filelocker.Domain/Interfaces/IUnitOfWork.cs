@@ -6,7 +6,7 @@ namespace Filelocker.Domain.Interfaces
     public interface IUnitOfWork : IDisposable
     {
         IGenericRepository<File> FileRepository { get; }
-        IGenericRepository<User> UserRepository { get; }
+        IGenericRepository<ApplicationUser> UserRepository { get; }
 
         Task CommitAsync();
     }
