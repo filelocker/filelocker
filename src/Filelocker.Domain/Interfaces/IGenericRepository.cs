@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
-namespace Filelocker.DataAccess
+namespace Filelocker.Domain.Interfaces
 {
     public interface IGenericRepository<T> where T : class
     {

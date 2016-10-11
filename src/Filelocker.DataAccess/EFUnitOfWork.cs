@@ -1,11 +1,11 @@
-﻿using Filelocker.DataAccess.Interfaces;
-using Filelocker.DataAccess.Repositories;
+﻿using Filelocker.DataAccess.Repositories;
 using Filelocker.Domain;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Filelocker.Domain.Interfaces;
 
 namespace Filelocker.DataAccess
 {
@@ -25,15 +25,9 @@ namespace Filelocker.DataAccess
 
         #region IUnitOfWork Implementation
 
-        public IGenericRepository<File> FileRepository
-        {
-            get { return _fileRepo; }
-        }
+        public IGenericRepository<File> FileRepository => _fileRepo;
 
-        public IGenericRepository<User> UserRepository
-        {
-            get { return _userRepo; }
-        }
+        public IGenericRepository<User> UserRepository => _userRepo;
 
         public async Task CommitAsync()
         {

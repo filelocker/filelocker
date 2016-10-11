@@ -1,8 +1,7 @@
-﻿using Filelocker.Domain;
-using System;
+﻿using System;
 using System.Threading.Tasks;
 
-namespace Filelocker.DataAccess.Interfaces
+namespace Filelocker.Domain.Interfaces
 {
     public interface IUnitOfWork : IDisposable
     {

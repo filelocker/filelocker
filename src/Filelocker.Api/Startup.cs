@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Filelocker.Domain.Interfaces;
+using Filelocker.FileSystemProviders;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -31,11 +33,12 @@ namespace Filelocker.Api
         public void ConfigureServices(IServiceCollection services)
         {
             // Add framework services.
+            services.AddScoped<IFileStorageProvider>(p => new FileSystemStorageProvider(@"C:\Temp\filelocker"));
             services.AddMvc();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory, IFileStorageProvider fileStorageProvider)
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
@@ -58,7 +61,7 @@ namespace Filelocker.Api
                     var buffer = new byte[chunkSize];
                     var fileName = GetFileName(section.ContentDisposition);
 
-                    using (var stream = new FileStream(fileName, FileMode.Append))
+                    using (var stream = fileStorageProvider.GetStream(fileName))
                     {
                         var bytesRead = 0;
                         do
@@ -66,7 +69,7 @@ namespace Filelocker.Api
                             bytesRead = await section.Body.ReadAsync(buffer, 0, buffer.Length);
 
                             //TODO: Encrypt
-                            stream.Write(buffer, 0, bytesRead);
+                            await stream.WriteAsync(buffer, 0, bytesRead);
 
                         } while (bytesRead > 0);
                     }
