@@ -20,6 +20,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{737BC96D-1
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Filelocker.Api.Tests", "test\Filelocker.Api.Tests\Filelocker.Api.Tests.xproj", "{D5915870-0B35-4DF6-9170-A7EF15AAAA81}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Filelocker.DataAccess", "src\Filelocker.DataAccess\Filelocker.DataAccess.xproj", "{FCCBE4B5-BE67-46DC-B503-3B74CB1D2F54}"
+EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Filelocker.MSSQLProviders", "src\Filelocker.MSSQLProviders\Filelocker.MSSQLProviders.xproj", "{E7940292-CED1-4872-91B9-C5F7E7223B15}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,6 +46,14 @@ Global
 		{D5915870-0B35-4DF6-9170-A7EF15AAAA81}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D5915870-0B35-4DF6-9170-A7EF15AAAA81}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D5915870-0B35-4DF6-9170-A7EF15AAAA81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FCCBE4B5-BE67-46DC-B503-3B74CB1D2F54}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FCCBE4B5-BE67-46DC-B503-3B74CB1D2F54}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FCCBE4B5-BE67-46DC-B503-3B74CB1D2F54}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FCCBE4B5-BE67-46DC-B503-3B74CB1D2F54}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7940292-CED1-4872-91B9-C5F7E7223B15}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7940292-CED1-4872-91B9-C5F7E7223B15}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7940292-CED1-4872-91B9-C5F7E7223B15}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7940292-CED1-4872-91B9-C5F7E7223B15}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -51,5 +63,7 @@ Global
 		{C20F2E32-3B5D-4685-9CD4-C2DA704FE417} = {E4A22F5E-F645-461A-96ED-5E8C4FE0C114}
 		{470BF0E5-119B-425E-B4BB-25309A800C26} = {E4A22F5E-F645-461A-96ED-5E8C4FE0C114}
 		{D5915870-0B35-4DF6-9170-A7EF15AAAA81} = {737BC96D-1A71-4596-8B7F-3C583C8E28A8}
+		{FCCBE4B5-BE67-46DC-B503-3B74CB1D2F54} = {E4A22F5E-F645-461A-96ED-5E8C4FE0C114}
+		{E7940292-CED1-4872-91B9-C5F7E7223B15} = {E4A22F5E-F645-461A-96ED-5E8C4FE0C114}
 	EndGlobalSection
 EndGlobal
