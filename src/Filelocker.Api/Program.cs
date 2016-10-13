@@ -13,11 +13,12 @@ namespace Filelocker.Api
         public static void Main(string[] args)
         {
             Console.Title = "IdentityServer";
+            var wwwroot = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"src/Filelocker.Web/wwwroot"));
 
             var host = new WebHostBuilder()
                 .UseKestrel()
                 .UseUrls("http://localhost:5000")
-                .UseContentRoot(Directory.GetCurrentDirectory())
+                .UseWebRoot(wwwroot)
                 .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();

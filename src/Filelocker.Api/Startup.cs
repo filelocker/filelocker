@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.FileProviders;
 using Swashbuckle.Swagger.Model;
 
 namespace Filelocker.Api
@@ -83,10 +84,32 @@ namespace Filelocker.Api
             {
                 Authority = "http://localhost:5000",
                 ScopeName = "filelockerApi",
-
                 RequireHttpsMetadata = false
             });
             app.UseMiddleware<UploadMiddleware>();
+
+            app.UseDefaultFiles();
+
+            string libPath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"src/Filelocker.Web/node_modules"));
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(libPath),
+                RequestPath = new PathString("/node_modules")
+            });
+
+            app.UseStaticFiles(new StaticFileOptions
+            {
+#if DEBUG
+                OnPrepareResponse = (context) =>
+                {
+                    // Disable caching of all static files.
+                    context.Context.Response.Headers["Cache-Control"] = "no-cache, no-store";
+                    context.Context.Response.Headers["Pragma"] = "no-cache";
+                    context.Context.Response.Headers["Expires"] = "-1";
+                }
+#endif
+            });
+
 
             app.UseMvc();
             app.UseSwagger();
