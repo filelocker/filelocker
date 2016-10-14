@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using IdentityServer4.Models;
-
+using IdentityServer4.Services.InMemory;
 namespace Filelocker.Api.Models
 {
     public static class IdentityConfig
@@ -29,7 +29,7 @@ namespace Filelocker.Api.Models
                     ClientId = "webClient",
 
                     // no interactive user, use the clientid/secret for authentication
-                    AllowedGrantTypes = GrantTypes.ClientCredentials,
+                    AllowedGrantTypes = GrantTypes.ResourceOwnerPassword,
 
                     // secret for authentication
                     ClientSecrets =
@@ -41,6 +41,19 @@ namespace Filelocker.Api.Models
                     AllowedScopes = { "filelockerApi" }
                 }
             };
+        }
+
+        public static List<InMemoryUser> GetUsers()
+        {
+            return new List<InMemoryUser>()
+                {
+                    new InMemoryUser()
+                    {
+                        Username = "test@filelocker.com",
+                        Subject = 1.ToString(),
+                        Password = "test"
+                    }
+                };
         }
     }
 }

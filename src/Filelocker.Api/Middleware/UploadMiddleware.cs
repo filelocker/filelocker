@@ -7,6 +7,9 @@ using Filelocker.Domain.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Authorization;
+using Filelocker.Domain;
+using System.Security.Claims;
 
 namespace Filelocker.Api.Middleware
 {
@@ -16,18 +19,29 @@ namespace Filelocker.Api.Middleware
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
         private readonly IFileStorageProvider _fileStorageProvider;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public UploadMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IFileStorageProvider fileStorageProvider)
+        public UploadMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IFileStorageProvider fileStorageProvider, IUnitOfWork unitOfWork)
         {
             _next = next;
             _logger = loggerFactory.CreateLogger<UploadMiddleware>();
             _fileStorageProvider = fileStorageProvider;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task Invoke(HttpContext context)
         {
-            if (context.Request.Path.HasValue && context.Request.Path.Value == _route)
+            if (context.Request.Method.ToLower() == "post"  && context.Request.Path.HasValue && context.Request.Path.Value == _route)
             {
+                if (context.User.Identity.IsAuthenticated == false)
+                {
+                    context.Response.StatusCode = 401; //UnAuthorized
+                    await context.Response.WriteAsync("Must be authenticated to upload files.");
+                    return;
+                }
+                var identity = (ClaimsIdentity)context.User.Identity;
+                var userId = int.Parse(identity.Claims.Where(c => c.Type == "sub")
+                   .Select(c => c.Value).SingleOrDefault());
                 _logger.LogInformation("Handling file upload: " + context.Request.Path);
                 if (!IsMultipartContentType(context.Request.ContentType))
                 {
@@ -62,6 +76,11 @@ namespace Filelocker.Api.Middleware
 
                             } while (bytesRead > 0);
                         }
+                        _unitOfWork.FileRepository.Add(new FilelockerFile()
+                        {
+                            UserId = userId,
+                            Name = fileName
+                        });
                     }
                     else // A form KVP
                     {
@@ -71,10 +90,13 @@ namespace Filelocker.Api.Middleware
 
                     section = await reader.ReadNextSectionAsync();
                 }
+                
+                await _unitOfWork.CommitAsync();
                 // Write response
                 await context.Response.WriteAsync("Done.");
                 
                 _logger.LogInformation("Finished file upload.");
+                return;
             }
             await _next.Invoke(context);
         }

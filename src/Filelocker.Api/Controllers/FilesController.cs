@@ -6,6 +6,7 @@ using IdentityModel.Client;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Filelocker.Domain.Interfaces;
 
 namespace Filelocker.Api.Controllers
 {
@@ -13,15 +14,18 @@ namespace Filelocker.Api.Controllers
     public class FilesController
     {
         private readonly IHostingEnvironment _environment;
+        private readonly IUnitOfWork _unitOfwork;
 
-        public FilesController(IHostingEnvironment environment)
+        public FilesController(IHostingEnvironment environment, IUnitOfWork unitOfWork)
         {
             _environment = environment;
+            _unitOfwork = unitOfWork;
         }
 
         [HttpGet]
         public async Task<FileResult> GetAsync(int id)
         {
+            var file = await _unitOfwork.FileRepository.GetByIdAsync(id);
             //TODO: Read file stream, decrypt
             var result = new FileContentResult(new byte[0], "application/pdf")
             {
@@ -30,23 +34,7 @@ namespace Filelocker.Api.Controllers
 
             return await Task.FromResult(result);
         }
-
-        [HttpGet("token")]
-        public async Task<IActionResult> GetToken()
-        {
-            // discover endpoints from metadata
-            var disco = await DiscoveryClient.GetAsync("http://localhost:5000");
-            var tokenClient = new TokenClient(disco.TokenEndpoint, "webClient", "secret");
-            var tokenResponse = await tokenClient.RequestClientCredentialsAsync("filelockerApi");
-
-            if (tokenResponse.IsError)
-            {
-                throw new Exception("Token Response Error");
-            }
-
-            return new ObjectResult(tokenResponse);
-        }
-
+        
         [HttpPost]
         public async Task<IActionResult> PostAsync([FromBody]string test)
         {
@@ -63,6 +51,7 @@ namespace Filelocker.Api.Controllers
             //        }
             //    }
             //}
+            await Task.Delay(1);
             return new CreatedAtRouteResult("GetAsync", new {id = 0});
 
             //    return CreatedAtRoute(

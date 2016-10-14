@@ -18,6 +18,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.FileProviders;
 using Swashbuckle.Swagger.Model;
+using Filelocker.DataAccess;
+using Microsoft.EntityFrameworkCore;
 
 namespace Filelocker.Api
 {
@@ -42,7 +44,12 @@ namespace Filelocker.Api
         {
             services.AddDeveloperIdentityServer()
                 .AddInMemoryScopes(IdentityConfig.GetScopes())
-                .AddInMemoryClients(IdentityConfig.GetClients());
+                .AddInMemoryClients(IdentityConfig.GetClients())
+                .AddInMemoryUsers(IdentityConfig.GetUsers());
+
+            services.AddDbContext<EfUnitOfWork>(options => options.UseSqlite(@"Filename=./filelocker.db", b => b.MigrationsAssembly("Filelocker.Api")));
+
+
             //var source = System.IO.File.ReadAllText("MyCertificate.b64cert");
             //var certBytes = Convert.FromBase64String(source);
             //var certificate = new X509Certificate2(certBytes, "password");
@@ -58,6 +65,7 @@ namespace Filelocker.Api
             //builder.AddInMemoryUsers(Users.Get());
 
             // Add framework services.
+            services.AddScoped<IUnitOfWork, EfUnitOfWork>();
             services.AddScoped<IFileStorageProvider>(p => new FileSystemStorageProvider(@"C:\Temp\filelocker"));
             services.AddSwaggerGen();
             services.ConfigureSwaggerGen(options =>
@@ -90,12 +98,12 @@ namespace Filelocker.Api
 
             app.UseDefaultFiles();
 
-            string libPath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"src/Filelocker.Web/node_modules"));
-            app.UseStaticFiles(new StaticFileOptions
-            {
-                FileProvider = new PhysicalFileProvider(libPath),
-                RequestPath = new PathString("/node_modules")
-            });
+            //string libPath = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), @"src/Filelocker.Web/node_modules"));
+            //app.UseStaticFiles(new StaticFileOptions
+            //{
+            //    FileProvider = new PhysicalFileProvider(libPath),
+            //    RequestPath = new PathString("/node_modules")
+            //});
 
             app.UseStaticFiles(new StaticFileOptions
             {

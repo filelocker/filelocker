@@ -11,21 +11,21 @@ namespace Filelocker.DataAccess
 {
     public class EfUnitOfWork : DbContext, IUnitOfWork
     {
-        private readonly EfGenericRepository<File> _fileRepo;
+        private readonly EfGenericRepository<FilelockerFile> _fileRepo;
         private readonly EfGenericRepository<ApplicationUser> _userRepo;
 
-        public DbSet<File> Files { get; set; }
+        public DbSet<FilelockerFile> Files { get; set; }
         public DbSet<ApplicationUser> Users { get; set; }
-
-        public EfUnitOfWork()
+        
+        public EfUnitOfWork(DbContextOptions options) : base(options)
         {
-            _fileRepo = new EfGenericRepository<File>(Files);
+            _fileRepo = new EfGenericRepository<FilelockerFile>(Files);
             _userRepo = new EfGenericRepository<ApplicationUser>(Users);
         }
 
         #region IUnitOfWork Implementation
 
-        public IGenericRepository<File> FileRepository => _fileRepo;
+        public IGenericRepository<FilelockerFile> FileRepository => _fileRepo;
 
         public IGenericRepository<ApplicationUser> UserRepository => _userRepo;
 

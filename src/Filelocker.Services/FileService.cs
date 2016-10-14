@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Filelocker.Domain.Interfaces;
-using File = Filelocker.Domain.File;
+using FilelockerFile = Filelocker.Domain.FilelockerFile;
 
 namespace Filelocker.Services
 {
@@ -24,7 +24,7 @@ namespace Filelocker.Services
             return _fileStorageProvider.GetStream(fileName);
         } 
 
-        public async Task CreateFileAsync(Stream fileStream, File file)
+        public async Task CreateFileAsync(Stream fileStream, FilelockerFile file)
         {
             try
             {

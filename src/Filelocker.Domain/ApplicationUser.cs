@@ -7,6 +7,6 @@ namespace Filelocker.Domain
     {
         public string DisplayName { get; set; }
 
-        public IEnumerable<File> Files { get; set; }
+        public IEnumerable<FilelockerFile> Files { get; set; }
     }
 }
