@@ -19,22 +19,22 @@ namespace Filelocker.Services
             _fileStorageProvider = fileStorageProvider;
         }
 
-        public Stream GetStream(string fileName)
-        {
-            return _fileStorageProvider.GetStream(fileName);
-        } 
+        //public Stream GetStream(string fileName)
+        //{
+        //    return _fileStorageProvider.Get(fileName);
+        //} 
 
-        public async Task CreateFileAsync(Stream fileStream, FilelockerFile file)
-        {
-            try
-            {
-                _unitOfWork.FileRepository.Add(file);
-            }
-            catch (Exception ex)
-            {
+        //public async Task CreateFileAsync(Stream fileStream, FilelockerFile file)
+        //{
+        //    try
+        //    {
+        //        _unitOfWork.FileRepository.Add(file);
+        //    }
+        //    catch (Exception ex)
+        //    {
                 
-                throw;
-            }
-        }
+        //        throw;
+        //    }
+        //}
     }
 }

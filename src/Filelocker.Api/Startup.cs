@@ -47,7 +47,7 @@ namespace Filelocker.Api
                 .AddInMemoryClients(IdentityConfig.GetClients())
                 .AddInMemoryUsers(IdentityConfig.GetUsers());
 
-            services.AddDbContext<EfUnitOfWork>(options => options.UseSqlite(@"Filename=./filelocker.db", b => b.MigrationsAssembly("Filelocker.Api")));
+            services.AddDbContext<EfUnitOfWork>(options => options.UseSqlite(@"Filename=./filelocker/filelocker.db", b => b.MigrationsAssembly("Filelocker.Api")));
 
 
             //var source = System.IO.File.ReadAllText("MyCertificate.b64cert");
@@ -66,7 +66,7 @@ namespace Filelocker.Api
 
             // Add framework services.
             services.AddScoped<IUnitOfWork, EfUnitOfWork>();
-            services.AddScoped<IFileStorageProvider>(p => new FileSystemStorageProvider(@"C:\Temp\filelocker"));
+            services.AddScoped<IFileStorageProvider>(p => new FileSystemStorageProvider(@"./filelocker"));
             services.AddSwaggerGen();
             services.ConfigureSwaggerGen(options =>
             {
@@ -94,7 +94,6 @@ namespace Filelocker.Api
                 ScopeName = "filelockerApi",
                 RequireHttpsMetadata = false
             });
-            app.UseMiddleware<UploadMiddleware>();
 
             app.UseDefaultFiles();
 
@@ -118,7 +117,7 @@ namespace Filelocker.Api
 #endif
             });
 
-
+            //app.UseMiddleware<UploadMiddleware>();
             app.UseMvc();
             app.UseSwagger();
             app.UseSwaggerUi();

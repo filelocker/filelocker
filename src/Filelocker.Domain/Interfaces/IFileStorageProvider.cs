@@ -8,10 +8,10 @@ namespace Filelocker.Domain.Interfaces
 {
     public interface IFileStorageProvider
     {
-        Task SaveAsync(Stream fileStream, string fileName);
+        Stream GetWriteStream(string fileName);
 
-        Task<Stream> ReadAsync(string fileName);
+        Stream GetReadStream(string fileName);
 
-        Stream GetStream(string fileName);
+        Task DeleteFile(string fileName);
     }
 }

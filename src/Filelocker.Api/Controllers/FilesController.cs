@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Filelocker.Domain.Interfaces;
+using System.Security.Cryptography;
 
 namespace Filelocker.Api.Controllers
 {
@@ -15,26 +16,27 @@ namespace Filelocker.Api.Controllers
     {
         private readonly IHostingEnvironment _environment;
         private readonly IUnitOfWork _unitOfwork;
-
-        public FilesController(IHostingEnvironment environment, IUnitOfWork unitOfWork)
+        private readonly IFileStorageProvider _fileStorageProvider;
+        public FilesController(IHostingEnvironment environment, IUnitOfWork unitOfWork, IFileStorageProvider fileStorageProvider)
         {
             _environment = environment;
             _unitOfwork = unitOfWork;
+            _fileStorageProvider = fileStorageProvider;
         }
 
         [HttpGet]
-        public async Task<FileResult> GetAsync(int id)
+        public async Task<FileStreamResult> GetAsync(int id)
         {
             var file = await _unitOfwork.FileRepository.GetByIdAsync(id);
-            //TODO: Read file stream, decrypt
-            var result = new FileContentResult(new byte[0], "application/pdf")
-            {
-                FileDownloadName = "test.pdf"
-            };
-
-            return await Task.FromResult(result);
+            var fs = _fileStorageProvider.GetReadStream(id.ToString());
+            var decryptor = Aes.Create();
+            var pdb = new Rfc2898DeriveBytes(file.EncryptionKey, file.EncryptionSalt.ToByteArray());
+            decryptor.Key = pdb.GetBytes(32);
+            decryptor.IV = pdb.GetBytes(16);
+            var cs = new CryptoStream(fs, decryptor.CreateDecryptor(), CryptoStreamMode.Read);
+            return new FileStreamResult(cs, "application/octet-stream");
         }
-        
+
         [HttpPost]
         public async Task<IActionResult> PostAsync([FromBody]string test)
         {
@@ -52,7 +54,7 @@ namespace Filelocker.Api.Controllers
             //    }
             //}
             await Task.Delay(1);
-            return new CreatedAtRouteResult("GetAsync", new {id = 0});
+            return new CreatedAtRouteResult("GetAsync", new { id = 0 });
 
             //    return CreatedAtRoute(
             //routeName: "SubscriberLink",

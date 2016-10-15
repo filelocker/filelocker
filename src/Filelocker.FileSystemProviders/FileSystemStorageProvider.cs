@@ -17,17 +17,19 @@ namespace Filelocker.FileSystemProviders
             _basePath = basePath;
         }
 
-        public Task SaveAsync(Stream fileStream, string fileName)
+        public Task DeleteFile(string fileName)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Stream> ReadAsync(string fileName)
+        public Stream GetReadStream(string fileName)
         {
-            throw new NotImplementedException();
+            var filePath = Path.Combine(_basePath, fileName);
+            var fileStream = new FileStream(filePath, FileMode.Open);
+            return fileStream;
         }
 
-        public Stream GetStream(string fileName)
+        public Stream GetWriteStream(string fileName)
         {
             var filePath = Path.Combine(_basePath, fileName);
             var fileStream = new FileStream(filePath, FileMode.Append);

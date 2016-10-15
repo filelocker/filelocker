@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.Authorization;
 using Filelocker.Domain;
 using System.Security.Claims;
+using System.Security.Cryptography;
 
 namespace Filelocker.Api.Middleware
 {
@@ -31,7 +32,7 @@ namespace Filelocker.Api.Middleware
 
         public async Task Invoke(HttpContext context)
         {
-            if (context.Request.Method.ToLower() == "post"  && context.Request.Path.HasValue && context.Request.Path.Value == _route)
+            if (context.Request.Method.ToLower() == "put" && context.Request.Path.HasValue && context.Request.Path.Value == _route)
             {
                 if (context.User.Identity.IsAuthenticated == false)
                 {
@@ -39,10 +40,12 @@ namespace Filelocker.Api.Middleware
                     await context.Response.WriteAsync("Must be authenticated to upload files.");
                     return;
                 }
+
                 var identity = (ClaimsIdentity)context.User.Identity;
                 var userId = int.Parse(identity.Claims.Where(c => c.Type == "sub")
                    .Select(c => c.Value).SingleOrDefault());
                 _logger.LogInformation("Handling file upload: " + context.Request.Path);
+
                 if (!IsMultipartContentType(context.Request.ContentType))
                 {
                     await _next.Invoke(context);
@@ -62,25 +65,35 @@ namespace Filelocker.Api.Middleware
                     if (IsFileSection(section.ContentDisposition))
                     {
                         var fileName = GetFileName(section.ContentDisposition);
-
-                        using (var stream = _fileStorageProvider.GetStream(fileName))
-                        {
-                            var bytesRead = 0;
-                            do
-                            {
-                                bytesRead = await section.Body.ReadAsync(fileBuffer, 0, fileBuffer.Length);
-
-                                //TODO: Encrypt
-                                await stream.WriteAsync(fileBuffer, 0, bytesRead);
-                                //TODO: Update a SignalR Hub for progress tracking
-
-                            } while (bytesRead > 0);
-                        }
-                        _unitOfWork.FileRepository.Add(new FilelockerFile()
+                        var filelockerFile = new FilelockerFile()
                         {
                             UserId = userId,
-                            Name = fileName
-                        });
+                            Name = fileName,
+                            EncryptionKey = Guid.NewGuid().ToString(),
+                            EncryptionSalt = Guid.NewGuid()
+                        };
+                        _unitOfWork.FileRepository.Add(filelockerFile);
+                        await _unitOfWork.CommitAsync(); //Commit here to get thet File ID
+
+                        using (var fs = _fileStorageProvider.GetWriteStream(filelockerFile.Id.ToString()))
+                        using (var encryptor = Aes.Create())
+                        {
+                            var pdb = new Rfc2898DeriveBytes(filelockerFile.EncryptionKey, filelockerFile.EncryptionSalt.ToByteArray());
+                            encryptor.Key = pdb.GetBytes(32);
+                            encryptor.IV = pdb.GetBytes(16);
+
+                            using (var cs = new CryptoStream(fs, encryptor.CreateEncryptor(), CryptoStreamMode.Write))
+                            {
+                                var bytesRead = 0;
+                                do
+                                {
+                                    bytesRead = await section.Body.ReadAsync(fileBuffer, 0, fileBuffer.Length);
+                                    await cs.WriteAsync(fileBuffer, 0, fileBuffer.Length);
+                                    //TODO: Update a SignalR Hub for progress tracking
+
+                                } while (bytesRead > 0);
+                            }
+                        }
                     }
                     else // A form KVP
                     {
@@ -90,15 +103,15 @@ namespace Filelocker.Api.Middleware
 
                     section = await reader.ReadNextSectionAsync();
                 }
-                
-                await _unitOfWork.CommitAsync();
+
                 // Write response
                 await context.Response.WriteAsync("Done.");
-                
+
                 _logger.LogInformation("Finished file upload.");
                 return;
             }
             await _next.Invoke(context);
+            return;
         }
 
         private static bool IsMultipartContentType(string contentType)

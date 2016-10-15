@@ -12,19 +12,20 @@ namespace Filelocker.AzureProviders
         public BlobStorageProvider(string connectionString)
         {
             //CloudStorageAccount storageAccount = CloudStorageAccount.Parse(connectionString);
+       
         }
 
-        public Task SaveAsync(Stream fileStream, string fileName)
+        public Stream GetWriteStream(string fileName)
         {
             throw new NotImplementedException();
         }
 
-        public Task<Stream> ReadAsync(string fileName)
+        public Stream GetReadStream(string fileName)
         {
             throw new NotImplementedException();
         }
 
-        public Stream GetStream(string fileName)
+        public Task DeleteFile(string fileName)
         {
             throw new NotImplementedException();
         }

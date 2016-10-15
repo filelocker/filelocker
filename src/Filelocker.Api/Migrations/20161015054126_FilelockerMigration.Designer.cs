@@ -8,9 +8,10 @@ using Filelocker.DataAccess;
 namespace Filelocker.Api.Migrations
 {
     [DbContext(typeof(EfUnitOfWork))]
-    partial class EfUnitOfWorkModelSnapshot : ModelSnapshot
+    [Migration("20161015054126_FilelockerMigration")]
+    partial class FilelockerMigration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
             modelBuilder
                 .HasAnnotation("ProductVersion", "1.0.1");
