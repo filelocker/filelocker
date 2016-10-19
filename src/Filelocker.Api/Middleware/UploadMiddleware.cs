@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using Filelocker.Domain;
 using System.Security.Claims;
 using System.Security.Cryptography;
+using Filelocker.Domain.Constants;
 
 namespace Filelocker.Api.Middleware
 {
@@ -42,9 +43,7 @@ namespace Filelocker.Api.Middleware
                 }
 
                 var identity = (ClaimsIdentity)context.User.Identity;
-                var userId = int.Parse(identity.Claims.Where(c => c.Type == "sub")
-                   .Select(c => c.Value).SingleOrDefault());
-                _logger.LogInformation("Handling file upload: " + context.Request.Path);
+                var userId = int.Parse(identity.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault());
 
                 if (!IsMultipartContentType(context.Request.ContentType))
                 {
@@ -64,35 +63,51 @@ namespace Filelocker.Api.Middleware
                     var fileBuffer = new byte[chunkSize];
                     if (IsFileSection(section.ContentDisposition))
                     {
-                        var fileName = GetFileName(section.ContentDisposition);
-                        var filelockerFile = new FilelockerFile()
+                        FilelockerFile filelockerFile = null;
+                        try
                         {
-                            UserId = userId,
-                            Name = fileName,
-                            EncryptionKey = Guid.NewGuid().ToString(),
-                            EncryptionSalt = Guid.NewGuid()
-                        };
-                        _unitOfWork.FileRepository.Add(filelockerFile);
-                        await _unitOfWork.CommitAsync(); //Commit here to get thet File ID
-
-                        using (var fs = _fileStorageProvider.GetWriteStream(filelockerFile.Id.ToString()))
-                        using (var encryptor = Aes.Create())
-                        {
-                            var pdb = new Rfc2898DeriveBytes(filelockerFile.EncryptionKey, filelockerFile.EncryptionSalt.ToByteArray());
-                            encryptor.Key = pdb.GetBytes(32);
-                            encryptor.IV = pdb.GetBytes(16);
-
-                            using (var cs = new CryptoStream(fs, encryptor.CreateEncryptor(), CryptoStreamMode.Write))
+                            var fileName = GetFileName(section.ContentDisposition);
+                            filelockerFile = new FilelockerFile()
                             {
-                                var bytesRead = 0;
-                                do
-                                {
-                                    bytesRead = await section.Body.ReadAsync(fileBuffer, 0, fileBuffer.Length);
-                                    await cs.WriteAsync(fileBuffer, 0, fileBuffer.Length);
-                                    //TODO: Update a SignalR Hub for progress tracking
+                                UserId = userId,
+                                Name = fileName,
+                                EncryptionKey = Guid.NewGuid().ToString(),
+                                EncryptionSalt = Guid.NewGuid()
+                            };
+                            _unitOfWork.FileRepository.Add(filelockerFile);
+                            await _unitOfWork.CommitAsync(); //Commit here to get thet File ID
 
-                                } while (bytesRead > 0);
+                            using (var fs = _fileStorageProvider.GetWriteStream(filelockerFile.Id.ToString()))
+                            using (var encryptor = Aes.Create())
+                            {
+                                var pdb = new Rfc2898DeriveBytes(filelockerFile.EncryptionKey, filelockerFile.EncryptionSalt.ToByteArray());
+                                encryptor.Key = pdb.GetBytes(32);
+                                encryptor.IV = pdb.GetBytes(16);
+
+                                using (var cs = new CryptoStream(fs, encryptor.CreateEncryptor(), CryptoStreamMode.Write))
+                                {
+                                    var bytesRead = 0;
+                                    do
+                                    {
+                                        bytesRead = await section.Body.ReadAsync(fileBuffer, 0, fileBuffer.Length);
+                                        await cs.WriteAsync(fileBuffer, 0, fileBuffer.Length);
+                                        // TODO: Update a SignalR Hub for progress tracking
+                                        // https://www.rizamarhaban.com/2016/09/13/asp-net-core-signalr-for-windows-10-uwp-app/
+                                    } while (bytesRead > 0);
+                                }
                             }
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.LogWarning((int)FilelockerEventTypes.FileUpload, ex, "File upload failed");
+                            if (filelockerFile != null)
+                            {
+                                _unitOfWork.FileRepository.Delete(filelockerFile);
+                                var dbTask = _unitOfWork.CommitAsync();
+                                var fsTask = _fileStorageProvider.DeleteFile(filelockerFile.Id.ToString());
+                                await Task.WhenAll(dbTask, fsTask);
+                            }
+                            throw;
                         }
                     }
                     else // A form KVP
@@ -107,7 +122,7 @@ namespace Filelocker.Api.Middleware
                 // Write response
                 await context.Response.WriteAsync("Done.");
 
-                _logger.LogInformation("Finished file upload.");
+                _logger.LogInformation((int)FilelockerEventTypes.FileUpload, "File uploaded successfully.");
                 return;
             }
             await _next.Invoke(context);
