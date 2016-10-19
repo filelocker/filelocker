@@ -19,7 +19,12 @@ namespace Filelocker.FileSystemProviders
 
         public Task DeleteFile(string fileName)
         {
-            throw new NotImplementedException();
+            var filePath = Path.Combine(_basePath, fileName);
+            var task = Task.Run(() =>
+            {
+                File.Delete(filePath);
+            });
+            return task;
         }
 
         public Stream GetReadStream(string fileName)
