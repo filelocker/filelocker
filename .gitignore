@@ -4,3 +4,4 @@ node_modules/
 bin/
 obj/
 /src/Filelocker.Web/wwwroot
+.vs/config/applicationhost.config
