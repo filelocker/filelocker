@@ -17,7 +17,7 @@ namespace Filelocker.FileSystemProviders
             _basePath = basePath;
         }
 
-        public Task DeleteFile(string fileName)
+        public Task DeleteFileAsync(string fileName)
         {
             var filePath = Path.Combine(_basePath, fileName);
             var task = Task.Run(() =>

@@ -1,65 +1,62 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
-using IdentityModel.Client;
+
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+
+using Filelocker.Api.Extensions;
+using Filelocker.Domain;
 using Filelocker.Domain.Interfaces;
-using System.Security.Cryptography;
 
 namespace Filelocker.Api.Controllers
 {
     [Route("api/[controller]")]
-    public class FilesController
+    [Authorize]
+    public class FilesController : Controller
     {
         private readonly IHostingEnvironment _environment;
-        private readonly IUnitOfWork _unitOfwork;
-        private readonly IFileStorageProvider _fileStorageProvider;
-        public FilesController(IHostingEnvironment environment, IUnitOfWork unitOfWork, IFileStorageProvider fileStorageProvider)
+        private readonly IFileService _fileService;
+
+        public FilesController(IHostingEnvironment environment, IFileService fileService)
         {
             _environment = environment;
-            _unitOfwork = unitOfWork;
-            _fileStorageProvider = fileStorageProvider;
+            _fileService = fileService;
+        }
+
+        [HttpGet("{id:int}")]
+        public async Task<IActionResult> GetAsync(int id)
+        {
+            //TODO: Permissions
+            var file = await _fileService.GetFileByIdAsync(id);
+            if (file == null) return NotFound("File record not found");
+            var fs = _fileService.GetReadStream(file);
+            
+            return new FileStreamResult(fs, "application/octet-stream");
         }
 
         [HttpGet]
-        public async Task<FileStreamResult> GetAsync(int id)
+        public async Task<IEnumerable<FilelockerFile>> GetAsync()
         {
-            var file = await _unitOfwork.FileRepository.GetByIdAsync(id);
-            var fs = _fileStorageProvider.GetReadStream(id.ToString());
-            var decryptor = Aes.Create();
-            var pdb = new Rfc2898DeriveBytes(file.EncryptionKey, file.EncryptionSalt.ToByteArray());
-            decryptor.Key = pdb.GetBytes(32);
-            decryptor.IV = pdb.GetBytes(16);
-            var cs = new CryptoStream(fs, decryptor.CreateDecryptor(), CryptoStreamMode.Read);
-            return new FileStreamResult(cs, "application/octet-stream");
+            var userId = HttpContext.User.Identity.GetUserId();
+            var userFiles = await _fileService.GetFilesByUserIdAsync(userId);
+            return userFiles;
         }
 
         [HttpPost]
-        public async Task<IActionResult> PostAsync([FromBody]string test)
+        public async Task PostAsync(FilelockerFile file)
         {
-
-            //var fileId = 0;
-            //var uploads = Path.Combine(_environment.WebRootPath, "uploads");
-            //foreach (var file in files)
-            //{
-            //    if (file.Length > 0)
-            //    {
-            //        using (var fileStream = new FileStream(Path.Combine(uploads, file.FileName), FileMode.Create))
-            //        {
-            //            await file.CopyToAsync(fileStream);
-            //        }
-            //    }
-            //}
-            await Task.Delay(1);
-            return new CreatedAtRouteResult("GetAsync", new { id = 0 });
-
-            //    return CreatedAtRoute(
-            //routeName: "SubscriberLink",
-            //routeValues: new { id = subscriber.Id },
-            //value: subscriber);
+            //TODO: Permissions
+            await _fileService.CreateOrUpdateFileAsync(file);
+        }
+        
+        [HttpDelete("{id:int}")]
+        public async Task DeleteAsync(int id)
+        {
+            //TODO: Permissions
+            await _fileService.DeleteFileAsync(id);
         }
     }
 }

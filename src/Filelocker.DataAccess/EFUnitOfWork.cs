@@ -13,14 +13,20 @@ namespace Filelocker.DataAccess
     {
         private readonly EfGenericRepository<FilelockerFile> _fileRepo;
         private readonly EfGenericRepository<ApplicationUser> _userRepo;
+        private readonly EfGenericRepository<PrivateFileShare> _privateShareRepo;
+
 
         public DbSet<FilelockerFile> Files { get; set; }
+
         public DbSet<ApplicationUser> Users { get; set; }
-        
+
+        public DbSet<PrivateFileShare> PrivateFileShares { get; set; }
+
         public EfUnitOfWork(DbContextOptions options) : base(options)
         {
             _fileRepo = new EfGenericRepository<FilelockerFile>(Files);
             _userRepo = new EfGenericRepository<ApplicationUser>(Users);
+            _privateShareRepo = new EfGenericRepository<PrivateFileShare>(PrivateFileShares);
         }
 
         #region IUnitOfWork Implementation
@@ -28,6 +34,8 @@ namespace Filelocker.DataAccess
         public IGenericRepository<FilelockerFile> FileRepository => _fileRepo;
 
         public IGenericRepository<ApplicationUser> UserRepository => _userRepo;
+
+        public IGenericRepository<PrivateFileShare> PrivateFileShareRepository => _privateShareRepo;
 
         public async Task CommitAsync()
         {

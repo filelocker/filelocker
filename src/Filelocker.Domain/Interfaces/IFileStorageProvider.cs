@@ -10,6 +10,6 @@ namespace Filelocker.Domain.Interfaces
 
         Stream GetReadStream(string fileName);
 
-        Task DeleteFile(string fileName);
+        Task DeleteFileAsync(string fileName);
     }
 }

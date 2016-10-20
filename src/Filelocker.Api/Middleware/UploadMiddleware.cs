@@ -3,15 +3,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Filelocker.Domain.Interfaces;
+using System.Security.Cryptography;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Authorization;
+
 using Filelocker.Domain;
-using System.Security.Claims;
-using System.Security.Cryptography;
+using Filelocker.Domain.Interfaces;
 using Filelocker.Domain.Constants;
+using Filelocker.Api.Extensions;
 
 namespace Filelocker.Api.Middleware
 {
@@ -20,15 +21,12 @@ namespace Filelocker.Api.Middleware
         private string _route = "/api/files";
         private readonly RequestDelegate _next;
         private readonly ILogger _logger;
-        private readonly IFileStorageProvider _fileStorageProvider;
-        private readonly IUnitOfWork _unitOfWork;
+        private readonly IFileService _fileService;
 
-        public UploadMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IFileStorageProvider fileStorageProvider, IUnitOfWork unitOfWork)
+        public UploadMiddleware(RequestDelegate next, ILoggerFactory loggerFactory)
         {
             _next = next;
             _logger = loggerFactory.CreateLogger<UploadMiddleware>();
-            _fileStorageProvider = fileStorageProvider;
-            _unitOfWork = unitOfWork;
         }
 
         public async Task Invoke(HttpContext context)
@@ -41,9 +39,6 @@ namespace Filelocker.Api.Middleware
                     await context.Response.WriteAsync("Must be authenticated to upload files.");
                     return;
                 }
-
-                var identity = (ClaimsIdentity)context.User.Identity;
-                var userId = int.Parse(identity.Claims.Where(c => c.Type == "sub").Select(c => c.Value).SingleOrDefault());
 
                 if (!IsMultipartContentType(context.Request.ContentType))
                 {
@@ -69,15 +64,14 @@ namespace Filelocker.Api.Middleware
                             var fileName = GetFileName(section.ContentDisposition);
                             filelockerFile = new FilelockerFile()
                             {
-                                UserId = userId,
+                                UserId = context.User.Identity.GetUserId(),
                                 Name = fileName,
                                 EncryptionKey = Guid.NewGuid().ToString(),
                                 EncryptionSalt = Guid.NewGuid()
                             };
-                            _unitOfWork.FileRepository.Add(filelockerFile);
-                            await _unitOfWork.CommitAsync(); //Commit here to get thet File ID
+                            await _fileService.CreateOrUpdateFileAsync(filelockerFile);
 
-                            using (var fs = _fileStorageProvider.GetWriteStream(filelockerFile.Id.ToString()))
+                            using (var fs = _fileService.GetWriteStream(filelockerFile.Id.ToString()))
                             using (var encryptor = Aes.Create())
                             {
                                 var pdb = new Rfc2898DeriveBytes(filelockerFile.EncryptionKey, filelockerFile.EncryptionSalt.ToByteArray());
@@ -91,8 +85,6 @@ namespace Filelocker.Api.Middleware
                                     {
                                         bytesRead = await section.Body.ReadAsync(fileBuffer, 0, fileBuffer.Length);
                                         await cs.WriteAsync(fileBuffer, 0, fileBuffer.Length);
-                                        // TODO: Update a SignalR Hub for progress tracking
-                                        // https://www.rizamarhaban.com/2016/09/13/asp-net-core-signalr-for-windows-10-uwp-app/
                                     } while (bytesRead > 0);
                                 }
                             }
@@ -102,10 +94,7 @@ namespace Filelocker.Api.Middleware
                             _logger.LogWarning((int)FilelockerEventTypes.FileUpload, ex, "File upload failed");
                             if (filelockerFile != null)
                             {
-                                _unitOfWork.FileRepository.Delete(filelockerFile);
-                                var dbTask = _unitOfWork.CommitAsync();
-                                var fsTask = _fileStorageProvider.DeleteFile(filelockerFile.Id.ToString());
-                                await Task.WhenAll(dbTask, fsTask);
+                                await _fileService.DeleteFileAsync(filelockerFile.Id);
                             }
                             throw;
                         }

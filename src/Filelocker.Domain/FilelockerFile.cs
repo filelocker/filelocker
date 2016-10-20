@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Filelocker.Domain
 {
@@ -12,5 +13,8 @@ namespace Filelocker.Domain
         public string EncryptionKey { get; set; }
 
         public Guid EncryptionSalt { get; set; }
+
+        //Navigation Properties
+        public List<PrivateFileShare> PrivateFileShares { get; set; }
     }
 }

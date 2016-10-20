@@ -1,14 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
+using System.Security.Cryptography;
+
 using Filelocker.Domain.Interfaces;
-using FilelockerFile = Filelocker.Domain.FilelockerFile;
+using Filelocker.Domain;
+using System.Linq;
 
 namespace Filelocker.Services
 {
-    public class FileService
+    public class FileService : IFileService
     {
         private IUnitOfWork _unitOfWork;
         private IFileStorageProvider _fileStorageProvider;
@@ -19,22 +20,51 @@ namespace Filelocker.Services
             _fileStorageProvider = fileStorageProvider;
         }
 
-        //public Stream GetStream(string fileName)
-        //{
-        //    return _fileStorageProvider.Get(fileName);
-        //} 
+        public async Task CreateOrUpdateFileAsync(FilelockerFile file)
+        {
+            _unitOfWork.FileRepository.Add(file);
+            await _unitOfWork.CommitAsync(); //Commit here to get thet File ID
+        }
 
-        //public async Task CreateFileAsync(Stream fileStream, FilelockerFile file)
-        //{
-        //    try
-        //    {
-        //        _unitOfWork.FileRepository.Add(file);
-        //    }
-        //    catch (Exception ex)
-        //    {
-                
-        //        throw;
-        //    }
-        //}
+        public Stream GetReadStream(FilelockerFile file)
+        {
+            var fs = _fileStorageProvider.GetReadStream(file.Id.ToString());
+            var decryptor = Aes.Create();
+            var pdb = new Rfc2898DeriveBytes(file.EncryptionKey, file.EncryptionSalt.ToByteArray());
+            decryptor.Key = pdb.GetBytes(32);
+            decryptor.IV = pdb.GetBytes(16);
+            var cs = new CryptoStream(fs, decryptor.CreateDecryptor(), CryptoStreamMode.Read);
+            return cs;
+        }
+
+        public Stream GetWriteStream(string fileName)
+        {
+            return _fileStorageProvider.GetWriteStream(fileName);
+        }
+
+        public async Task DeleteFileAsync(int id)
+        {
+            var filelockerFile = await _unitOfWork.FileRepository.GetByIdAsync(id);
+            if (filelockerFile != null)
+            {
+                _unitOfWork.FileRepository.Delete(filelockerFile);
+            }
+
+            var dbTask = _unitOfWork.CommitAsync();
+            var fsTask = _fileStorageProvider.DeleteFileAsync(filelockerFile.Id.ToString());
+            await Task.WhenAll(dbTask, fsTask);
+        }
+
+        public async Task<FilelockerFile[]> GetFilesByUserIdAsync(int userId)
+        {
+            var files = await _unitOfWork.FileRepository.FindAsync(f => f.UserId == userId);
+            return files.ToArray();
+        }
+
+        public async Task<FilelockerFile> GetFileByIdAsync(int id)
+        {
+            var file = await _unitOfWork.FileRepository.GetByIdAsync(id);
+            return file;
+        }
     }
 }

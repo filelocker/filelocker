@@ -1,11 +1,11 @@
-﻿var gulp        = require("gulp");
-var path        = require("path");
-var sass        = require("gulp-sass");
-var ts          = require("gulp-typescript");
-var sourcemaps  = require("gulp-sourcemaps");
-var tslint      = require("gulp-tslint");
-var del         = require('del');
-var Builder     = require('systemjs-builder');
+﻿var gulp = require("gulp");
+var path = require("path");
+var sass = require("gulp-sass");
+var ts = require("gulp-typescript");
+var sourcemaps = require("gulp-sourcemaps");
+var tslint = require("gulp-tslint");
+var del = require('del');
+var Builder = require('systemjs-builder');
 
 var scriptsPath = "Frontend/**/*.ts";
 var sassPath = "Frontend/**/*.scss";
@@ -26,8 +26,7 @@ gulp.task("typescript", function () {
         isolatedModules: true
     });
 
-    var tsResult =
-            gulp.src(scriptsPath)
+    var tsResult = gulp.src(scriptsPath)
             .pipe(sourcemaps.init())
         	.pipe(ts(tsProject));
 
@@ -36,12 +35,12 @@ gulp.task("typescript", function () {
         .pipe(gulp.dest(destPath));
 });
 
-gulp.task("tslint", function() {
+gulp.task("tslint", function () {
     gulp.src(scriptsPath)
         .pipe(tslint({
             formatter: "prose"
         }))
-        .pipe(tslint.report( {
+        .pipe(tslint.report({
             emitError: false
         }));
 });
@@ -74,24 +73,24 @@ gulp.task("static files", function () {
         .pipe(gulp.dest(destPath + "app/"));
 });
 
-gulp.task('bundle', function() {
+gulp.task('bundle', function () {
     var builder = new Builder('/', 'wwwroot/app/systemjs.config.js');
     return Promise.all([
-        builder.buildStatic('wwwroot/app/home/boot.js', 'wwwroot/app/home/bundle.js', {minify: false, sourceMaps: false}),
-        builder.buildStatic('wwwroot/app/passwordReset/boot.js', 'wwwroot/app/passwordReset/bundle.js', {minify: false, sourceMaps: false}),
-        builder.buildStatic('wwwroot/app/fassaden/boot.js', 'wwwroot/app/fassaden/bundle.js', {minify: false, sourceMaps: false}),
-        builder.buildStatic('wwwroot/app/lamellen/boot.js', 'wwwroot/app/lamellen/bundle.js', {minify: false, sourceMaps: false})
+        builder.buildStatic('wwwroot/app/home/boot.js', 'wwwroot/app/home/bundle.js', { minify: false, sourceMaps: false }),
+        builder.buildStatic('wwwroot/app/passwordReset/boot.js', 'wwwroot/app/passwordReset/bundle.js', { minify: false, sourceMaps: false }),
+        builder.buildStatic('wwwroot/app/fassaden/boot.js', 'wwwroot/app/fassaden/bundle.js', { minify: false, sourceMaps: false }),
+        builder.buildStatic('wwwroot/app/lamellen/boot.js', 'wwwroot/app/lamellen/bundle.js', { minify: false, sourceMaps: false })
     ])
-        .then(function() {
+        .then(function () {
             console.log("bundles complete");
         })
-        .catch(function(err) {
+        .catch(function (err) {
             console.log("bundles build error");
             console.log(err);
         })
 });
 
-gulp.task("build", ['clean'], function() {
+gulp.task("build", ['clean'], function () {
     gulp.start("static files");
     gulp.start("sass");
     gulp.start("typescript");

@@ -20,6 +20,7 @@ using Microsoft.Extensions.FileProviders;
 using Swashbuckle.Swagger.Model;
 using Filelocker.DataAccess;
 using Microsoft.EntityFrameworkCore;
+using Filelocker.Services;
 
 namespace Filelocker.Api
 {
@@ -67,6 +68,7 @@ namespace Filelocker.Api
             // Add framework services.
             services.AddScoped<IUnitOfWork, EfUnitOfWork>();
             services.AddScoped<IFileStorageProvider>(p => new FileSystemStorageProvider(@"./filelocker"));
+            services.AddScoped<IFileService, FileService>();
             services.AddSwaggerGen();
             services.ConfigureSwaggerGen(options =>
             {
@@ -88,6 +90,7 @@ namespace Filelocker.Api
         {
             loggerFactory.AddConsole(Configuration.GetSection("Logging"));
             loggerFactory.AddDebug();
+
             app.UseIdentityServerAuthentication(new IdentityServerAuthenticationOptions
             {
                 Authority = "http://localhost:5000",

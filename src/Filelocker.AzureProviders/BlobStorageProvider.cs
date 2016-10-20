@@ -25,7 +25,7 @@ namespace Filelocker.AzureProviders
             throw new NotImplementedException();
         }
 
-        public Task DeleteFile(string fileName)
+        public Task DeleteFileAsync(string fileName)
         {
             throw new NotImplementedException();
         }
