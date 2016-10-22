@@ -1,0 +1,36 @@
+{
+	"version": "1.0.0",
+	"name": "filelocker",
+	"private": true,
+  "devDependencies": {
+    "gulp": "3.9.1",
+    "gulp-watch": "4.3.10",
+    "gulp-concat": "2.5.2",
+    "gulp-cssmin": "0.1.7",
+    "gulp-uglify": "1.2.0",
+    "gulp-sass": "^2.3.2",
+    "gulp-typescript": "3.0.2",
+    "gulp-sourcemaps": "2.1.1",
+    "typescript": "2.0.3",
+    "typings": "1.4.0",
+    "rimraf": "2.5.4"
+  },
+  "dependencies": {
+    "@angular/common": "~2.1.0",
+    "@angular/compiler": "~2.1.0",
+    "@angular/core": "~2.1.0",
+    "@angular/forms": "~2.1.0",
+    "@angular/http": "~2.1.0",
+    "@angular/platform-browser": "~2.1.0",
+    "@angular/platform-browser-dynamic": "~2.1.0",
+    "@angular/router": "~3.1.0",
+    "@angular/upgrade": "~2.1.0",
+    "@types/core-js": "0.9.34",
+    "bootstrap": "^3.3.7",
+    "core-js": "^2.4.1",
+    "reflect-metadata": "^0.1.8",
+    "rxjs": "5.0.0-beta.12",
+    "systemjs": "0.19.39",
+    "zone.js": "^0.6.25"
+  }
+}

@@ -10,8 +10,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		global.json = global.json
 	EndProjectSection
 EndProject
-Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Filelocker.Web", "src\Filelocker.Web\Filelocker.Web.xproj", "{CFB2D074-A06E-4FCC-9DE0-07AF37915480}"
-EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Filelocker.Domain", "src\Filelocker.Domain\Filelocker.Domain.xproj", "{C20F2E32-3B5D-4685-9CD4-C2DA704FE417}"
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Filelocker.Api", "src\Filelocker.Api\Filelocker.Api.xproj", "{470BF0E5-119B-425E-B4BB-25309A800C26}"
@@ -36,16 +34,14 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Web", "Web", "{7D3C2440-79B
 EndProject
 Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Filelocker.Services.Tests", "test\Filelocker.Services.Tests\Filelocker.Services.Tests.xproj", "{47A8C81C-ECA2-47A9-87CA-F3AD308DCC74}"
 EndProject
+Project("{8BB2217D-0F2D-49D1-97BC-3654ED321F3B}") = "Filelocker.WebClient", "src\Filelocker.WebClient\Filelocker.WebClient.xproj", "{98E80153-4CBF-4794-A78F-F4B1ABEFE8A1}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{CFB2D074-A06E-4FCC-9DE0-07AF37915480}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CFB2D074-A06E-4FCC-9DE0-07AF37915480}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CFB2D074-A06E-4FCC-9DE0-07AF37915480}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CFB2D074-A06E-4FCC-9DE0-07AF37915480}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C20F2E32-3B5D-4685-9CD4-C2DA704FE417}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{C20F2E32-3B5D-4685-9CD4-C2DA704FE417}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C20F2E32-3B5D-4685-9CD4-C2DA704FE417}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -82,12 +78,15 @@ Global
 		{47A8C81C-ECA2-47A9-87CA-F3AD308DCC74}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{47A8C81C-ECA2-47A9-87CA-F3AD308DCC74}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{47A8C81C-ECA2-47A9-87CA-F3AD308DCC74}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98E80153-4CBF-4794-A78F-F4B1ABEFE8A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98E80153-4CBF-4794-A78F-F4B1ABEFE8A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98E80153-4CBF-4794-A78F-F4B1ABEFE8A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98E80153-4CBF-4794-A78F-F4B1ABEFE8A1}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{CFB2D074-A06E-4FCC-9DE0-07AF37915480} = {7D3C2440-79B1-48A8-B1CF-0765DD68FFE3}
 		{C20F2E32-3B5D-4685-9CD4-C2DA704FE417} = {E4A22F5E-F645-461A-96ED-5E8C4FE0C114}
 		{470BF0E5-119B-425E-B4BB-25309A800C26} = {7D3C2440-79B1-48A8-B1CF-0765DD68FFE3}
 		{D5915870-0B35-4DF6-9170-A7EF15AAAA81} = {737BC96D-1A71-4596-8B7F-3C583C8E28A8}
@@ -99,5 +98,6 @@ Global
 		{510F221B-5CBE-4183-9274-E71C015E4285} = {8478C4A1-EE36-4B76-8F9D-0598FCDD0114}
 		{7D3C2440-79B1-48A8-B1CF-0765DD68FFE3} = {E4A22F5E-F645-461A-96ED-5E8C4FE0C114}
 		{47A8C81C-ECA2-47A9-87CA-F3AD308DCC74} = {737BC96D-1A71-4596-8B7F-3C583C8E28A8}
+		{98E80153-4CBF-4794-A78F-F4B1ABEFE8A1} = {7D3C2440-79B1-48A8-B1CF-0765DD68FFE3}
 	EndGlobalSection
 EndGlobal
